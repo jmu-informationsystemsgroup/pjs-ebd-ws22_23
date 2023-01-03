@@ -1,0 +1,23 @@
+{% extends 'base_plain.html' %}
+{% block content %}
+<main class="form-signin shadow m-auto">
+    <div class="form-image-div">
+        <img src="{{ url_for('static', filename='img/solar-energy.jpg') }}" class="form-image" alt="Solaroptimierung">
+    </div>
+    <div class="form-signin-div">
+        <div class="form-signin-inner-div">
+        <form method="POST" action="">
+            <img class="mb-4" src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="75"
+                height="75">
+            <h1 class="h3 mb-3 font-weight-normal">Einloggen</h1>
+            <label for="inputEmail" class="sr-only">Nutzername</label>
+            {{ form.hidden_tag() }}
+            {{ form.username }}
+            <label for="inputPassword" class="sr-only">Passwort</label>
+            {{ form.password }}
+            {{ form.submit }}
+        </form>
+    </div>
+    </div>
+</main>
+{% endblock %}

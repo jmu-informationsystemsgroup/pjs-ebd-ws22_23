@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header">
+        Dashboard
+      </div>
+      <div class="card-body">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <script>
+
+        var ctx = document.getElementById("lineChart").getContext("2d");
+        var lineChart = new Chart(ctx,{
+            type: "line",
+            data: {
+                labels: {{ labels | safe }},
+                datasets: [
+                    {
+                        label: "Solarstrom",
+                        data: {{ output | safe }},
+                        fill: false,
+                        borderColor: 'rgb(255, 99, 132)',
+                        lineTension: 0.1
+                    },
+                    {
+                        label: "Grundlast",
+                        data: {{ bConsum | safe }},
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        lineTension: 0.1
+                    },
+                    {
+                        label: "Verwaltung",
+                        data: {{ mConsum | safe }},
+                        fill: false,
+                        borderColor: 'rgb(255, 205, 86)',
+                        lineTension: 0.1
+                    },
+                    {
+                        label: "Produktion",
+                        data: {{ pConsum | safe }},
+                        fill: false,
+                        borderColor: 'rgb(201, 203, 207)',
+                        lineTension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                  x: {
+                    display: true,
+                    type: 'time',
+                    title: {
+                      display: true,
+                      text: 'Date'
+                    },
+                    ticks: {
+                      autoSkip: false,
+                      maxRotation: 0,
+                      major: {
+                        enabled: true
+                      },
+                      font: function(context) {
+                        if (context.tick && context.tick.major) {
+                          return {
+                            weight: 'bold',
+                          };
+                        }
+                      }
+                    }
+                  },
+                  y: {
+                    display: true,
+                    title: {
+                      display: true,
+                      text: 'kWh'
+                    }
+                  }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                return ' kWh';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

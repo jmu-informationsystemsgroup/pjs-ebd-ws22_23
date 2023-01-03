@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header">
+        Benutzerverwaltung
+      </div>
+      <div class="card-body">
+        <div class="accordion" id="accordionUsers">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                aria-expanded="true" aria-controls="collapseOne">
+                Nutzerübersicht
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <table class="table table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Rolle</th>
+                      <th scope="col">Aktion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for user in userList %}
+                    <tr>
+                      <th scope="row">{{user.id}}</th>
+                      <td>{{user.username}}</td>
+                      <td>
+                        {%+ if user.role == "0" %}
+                        Admin
+                        {%+ elif user.role == "1" %}
+                        Standard
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group" aria-label="Basic outlined example">
+                          {%+ if userid != user.id %}
+                          {%+ if user.role == "0" %}
+                          <a href="{{ url_for('settings',downgrade=user.id) }}" class="btn btn-outline-primary">Standard</a>
+                          {%+ elif user.role == "1" %}
+                          <a href="{{ url_for('settings',upgrade=user.id) }}" class="btn btn-outline-primary">Admin</a>
+                          {% endif %}
+                          <a data-toggle="modal" onclick="$('#deleteModal{{user.id}}').modal('toggle')"
+                            class="btn btn-outline-danger">x</a>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Neuen Nutzer anlegen
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+              data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <form method="POST" action="">
+                  <img class="mb-4" src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="75"
+                    height="75">
+                  <h1 class="h3 mb-3 font-weight-normal">Neuen Benutzer registrieren</h1>
+                  <label for="inputEmail" class="sr-only">Nutzername</label>
+                  {{ form.hidden_tag() }}
+                  {{ form.username }}
+                  <label for="inputPassword" class="sr-only">Passwort</label>
+                  {{ form.password }}
+                  <label for="inputRole" class="sr-only">Rolle</label>
+                  <br>
+                  {{ form.role }}
+                  <br>
+                  {{ form.submit }}
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <div class="card-header">
+        Wetter und Standort
+      </div>
+      <div class="card-body">
+        <form action="" method="post">
+          {{ weatherForm.hidden_tag() }}
+          <label for="OpenWeatherAPI">OpenWeatherAPI Key:</label><br>
+          {{ weatherForm.apikey }}
+          <br>
+          <label for="lan">Latitute:</label><br>
+          {{ weatherForm.lat }}
+          <br>
+          <label for="long">Longitute:</label><br>
+          {{ weatherForm.lon }}<br>
+          {{ weatherForm.submit }}
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <div class="card-header">
+        Verbräuche der Anlagen
+      </div>
+      <div class="card-body">
+        <form action="" method="post">
+          {{ machineForm.hidden_tag() }}
+          <label for="OpenWeatherAPI">Anlage 1:</label><br>
+          {{ machineForm.consumption_m1 }} kWh<br>
+          <label for="lan">Anlage 2:</label><br>
+          {{ machineForm.consumption_m2 }} kWh<br>
+          <label for="long">Anlage 3:</label><br>
+          {{ machineForm.consumption_m3 }} kWh<br>
+          {{ machineForm.submit }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for user in userList %}
+<!-- Modal -->
+<div class="modal fade" id="deleteModal{{user.id}}" tabindex="-1" role="dialog"
+  aria-labelledby="deleteModal{{user.id}}Label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModal{{user.id}}Label">Nutzer {{user.username}} löschen</h5>
+        <button type="button" class="close" onclick="$('#deleteModal{{user.id}}').modal('toggle')" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Wollen Sie wirklich den Nutzer {{user.username}} löschen?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="$('#deleteModal{{user.id}}').modal('toggle')">Auf keinen Fall!</button>
+        <a href="{{ url_for('settings',entry=user.id) }}" class="btn btn-danger">Weg mit dem
+          Kollegen!</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

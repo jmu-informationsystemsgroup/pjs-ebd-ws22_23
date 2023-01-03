@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    {% include 'elements/head.html' %}
+  </head>
+
+  <body>
+
+    <div class="sidebar d-flex flex-column flex-shrink-0 text-bg-dark">
+      {% include 'elements/sidebar.html' %}
+    </div>
+
+    <div class="inner">
+      <header class="p-3 header">
+        {% include 'elements/header.html' %}
+      </header>
+      <div class="container content text-center">
+        {% block content %} {% endblock %}
+      </div>
+    </div>
+
+  </body>
+
+</html>

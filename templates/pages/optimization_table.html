@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header">Optimization</div>
+      <div class="card-body">
+        <div class="bootstrap-iso">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col">
+                <h3>Hier sind die optimalen Zeitpunkte für Ihre Termine:</h3>
+                <p></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bootstrap-iso">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Bezeichnung</th>
+                      <th scope="col">Maschinen</th>
+                      <th scope="col">Datum</th>
+                      <th scope="col">Uhrzeit</th>
+                      <th scope="col">Dauer (h)</th>
+                      <th scope="col">Kalendereinladung</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in my_list %}
+                    <tr>
+                      <td>#{{ item.TerminID }}</td>
+                      <td>{{ item.bezeichnung }}</td>
+                      <td>{{ item.maschinen }}</td>
+                      <td>{{ item.Date }}</td>
+                      <td>{{ item.Time }}</td>
+                      <td>{{ item.dauer }}</td>
+                      <td>
+                        <a href="{{ url_for('return_files_calendar', dauer=item.dauer, bezeichnung=item.bezeichnung, datum=item.Date, uhrzeit=item.Time, id=item.TerminID) }}"
+                          target="blank"><button class='btn btn-primary'>Kalendereintrag</button></a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <p></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12 col-lg-3 d-flex align-items-stretch">
+    <div class="card">
+      <div class="card-header">Stromverbrauch der Termine</div>
+      <div class="card-body">
+        <p class="card-text">Die Planung aller Termine führt zu einem Stromverbrauch in Höhe von
+          <b>{{energy_consumption}} kWh</b>.
+        </p>
+        <p></p>
+        <div class="chart-container">
+          <canvas id="netzbezug" style="margin: 0 auto;" width="175" height="175"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6 d-flex align-items-stretch">
+    <div class="card">
+      <div class="card-header">Netzbezug der Termine</div>
+      <div class="row">
+        <div class="col-md-7">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Termin ID</th>
+                <th scope="col">Strom durch PV</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in netzbezug_termine_percent %}
+              <tr>
+                <td style="width: 1px; white-space: nowrap;">#{{ item.TerminID }}</td>
+                <td style="width: 1px; white-space: nowrap;"><b>{{ item.percent }} %</b></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-5">
+          <div class="card-body">
+            <p class="card-text">Es werden <b>{{obj_value}} kWh</b> aus dem Stromnetz bezogen.</p>
+            <p></p>
+            <div class="chart-container" style="position: relative">
+              <canvas id="netzbezug_pro_termin" style="margin: 0 auto;" width="175" height="175"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col col-lg-3 d-flex align-items-stretch">
+    <div class="card">
+      <div class="card-header">Anteil PV-Strom</div>
+      <div class="card-body">
+        <p class="card-text">Es kann <b>{{renewable_percent}} %</b> der benötigten Strommenge durch die
+          Photovoltaikanlage gedeckt werden.</p>
+        <p></p>
+        <div class="chart-container">
+          <canvas id="pv_percentage" style="margin: 0 auto;" width="175" height="175"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var ctx1 = document.getElementById('netzbezug').getContext('2d');
+  var energy_consumption_list = {{ energy_consumption_list }};
+  var termin_list = {{ termin_list }};
+  var termin_list_new = termin_list.map(String);
+
+  var netzbezug_chart = new Chart(ctx1, {
+    plugins: [ChartDataLabels],
+    type: 'doughnut',
+    data: {
+      labels: termin_list_new,
+      datasets: [{
+        label: 'Stromverbrauch',
+        data: energy_consumption_list,
+        backgroundColor: [
+          'rgba(15, 120, 120, 0.6)',
+          'rgba(15, 90, 150, 0.6)',
+          'rgba(15, 90, 250, 0.6)'
+        ]
+      }]
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      aspectRatio: 2,
+      cutoutPercentage: 50,
+      legend: {
+        display: false
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 2000
+      },
+      datalabels: {
+        display: 'auto',
+        align: 'bottom',
+        backgroundColor: '#ccc',
+        borderRadius: 3,
+        font: {
+          size: 18,
+        },
+        formatter: function (value, context) { return value || null; },
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context) {
+              return 'kWh';
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  var ctx3 = document.getElementById('netzbezug_pro_termin').getContext('2d');
+  var netzbezug_termine = {{ netzbezug_termine }};
+  var termin_list = {{ termin_list }};
+  var termin_list_new = termin_list.map(String);
+
+  var netzbezug_chart = new Chart(ctx3, {
+    plugins: [ChartDataLabels],
+    type: 'doughnut',
+    data: {
+      labels: termin_list_new,
+      datasets: [{
+        label: 'Netzbezug',
+        data: netzbezug_termine,
+        backgroundColor: [
+          'rgba(15, 120, 120, 0.6)',
+          'rgba(15, 90, 150, 0.6)',
+          'rgba(15, 90, 250, 0.6)'
+        ]
+      }]
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      aspectRatio: 2,
+      cutoutPercentage: 50,
+      legend: {
+        display: false
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 2000
+      },
+      datalabels: {
+        display: 'auto',
+        align: 'bottom',
+        backgroundColor: '#ccc',
+        borderRadius: 3,
+        font: {
+          size: 18,
+        },
+        formatter: function (value, context) { return value || null; },
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context) {
+              return 'kWh';
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  var ctx2 = document.getElementById('pv_percentage').getContext('2d');
+  var energy_consumption = {{ energy_consumption }}
+  var netzbezug = {{ obj_value }}
+
+  var percentage_chart = new Chart(ctx2, {
+    plugins: [ChartDataLabels],
+    type: 'doughnut',
+    data: {
+      labels: ['Solarstrom', 'Netzbezug'],
+      datasets: [{
+        //label: 'Solarstrom (kWh)',
+        //label: 'Netzbezug (kWh)',
+        data: [energy_consumption - netzbezug, netzbezug],
+        backgroundColor: [
+          'rgba(10, 150, 20, 0.6)',
+          'rgba(250, 10, 20, 0.6)'
+        ]
+      }]
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      aspectRatio: 2,
+      cutoutPercentage: 50,
+      legend: {
+        display: false
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 2000
+      },
+      datalabels: {
+        display: 'auto',
+        align: 'bottom',
+        backgroundColor: '#ccc',
+        borderRadius: 3,
+        font: {
+          size: 18,
+        },
+        formatter: function (value, context) { return value || null; },
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context) {
+              return 'kWh';
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}
